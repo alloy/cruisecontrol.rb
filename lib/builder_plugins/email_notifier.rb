@@ -44,18 +44,25 @@ class EmailNotifier < BuilderPlugin
     return if @emails.empty?
     email :deliver_build_report, build, "#{build.project.name} build #{build.label} fixed", "The build has been fixed."
   end
-  
+
   private
-  
+
   def email(template, build, *args)
-    BuildMailer.send(template, build, @emails, from, *args)
-    CruiseControl::Log.event("Sent e-mail to #{@emails.size == 1 ? "1 person" : "#{@emails.size} people"}", :debug)
+    emails = emails_including_optional_author(build)
+    BuildMailer.send(template, build, emails, from, *args)
+    CruiseControl::Log.event("Sent e-mail to #{emails.size == 1 ? "1 person" : "#{emails.size} people"}", :debug)
   rescue => e
     settings = ActionMailer::Base.smtp_settings.map { |k,v| "  #{k.inspect} = #{v.inspect}" }.join("\n")
     CruiseControl::Log.event("Error sending e-mail - current server settings are :\n#{settings}", :error)
     raise
   end
 
+  def emails_including_optional_author(build)
+    return @emails unless index = @emails.index(:author)
+    emails = @emails.dup
+    emails[index] = build.project.source_control.latest_revision.author_email
+    emails
+  end
 end
 
 Project.plugin :email_notifier

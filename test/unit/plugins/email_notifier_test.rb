@@ -44,6 +44,21 @@ class EmailNotifierTest < Test::Unit::TestCase
     assert_equal "[CruiseControl] myproj build 5 failed", mail.subject
   end
 
+  def test_send_email_to_author_with_failing_build
+    # Git is atm the only one that supports it so I used that, could have been a mock as well.
+    revision = SourceControl::Git::Revision.new(:author => 'Eloy Duran <eloy.de.enige@gmail.com>')
+    scm = stub('SourceControl', :latest_revision => revision)
+    @project.stubs(:source_control).returns(scm)
+
+    @notifier.emails << :author
+    @notifier.build_finished(failing_build)
+
+    mail = ActionMailer::Base.deliveries[0]
+    assert !mail.to.include?(:author)
+    assert mail.to.include?('eloy.de.enige@gmail.com')
+    assert @notifier.emails.include?(:author)
+  end
+
   def test_send_email_with_fixed_build
     Configuration.stubs(:dashboard_url).returns(nil)
     @build.expects(:output).at_least_once.returns(BUILD_LOG)

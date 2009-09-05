@@ -14,14 +14,19 @@ module SourceControl
       not_a_git_revision.stubs(:number).returns(r1.number)
       assert_false r1 == not_a_git_revision
     end
-    
+
+    def test_should_return_author_email
+      revision = Git::Revision.new(:author => "Eloy Duran <eloy.de.enige@gmail.com>")
+      assert_equal("eloy.de.enige@gmail.com", revision.author_email)
+    end
+
     def test_should_have_sensible_to_s
       assert_equal("Revision ...1234 committed by jeremy\n",
                    Git::Revision.new(:number => "1234", :author => "jeremy").to_s)
       assert_equal("Revision ...1234 committed by jeremy on 2000-01-02 03:04:00\n",
                    Git::Revision.new(:number => "1234", :author => "jeremy", :time => Time.parse("2000-01-02 03:04:00")).to_s)
     end
-    
+
     def test_should_convert_to_full_diff_message
       expected_message = %{Revision ...7652 committed by Scott Tamosunas on 2000-01-02 03:04:00
 

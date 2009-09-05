@@ -9,6 +9,10 @@ module SourceControl
       raise NotImplementedError, "author() not implemented by #{self.class}"
     end
 
+    def author_email
+      raise NotImplementedError, "author_email() not implemented by #{self.class}"
+    end
+
     def time
       raise NotImplementedError, "time() not implemented by #{self.class}"
     end

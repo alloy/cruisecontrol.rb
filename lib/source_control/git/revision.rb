@@ -15,6 +15,10 @@ module SourceControl
         changeset ? changeset.map{|change| change.gsub(/\|.*$/, '').strip} : []
       end
 
+      def author_email
+        @author_email ||= author.match(/^.+\s<(.+)>$/)[1]
+      end
+
       def to_s
         description = "Revision ...#{number} committed by #{author}"
         description << " on #{time.strftime('%Y-%m-%d %H:%M:%S')}" if time
